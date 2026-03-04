@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KSR Dairy and Farms</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+body{background:#f8f9fa;font-family:Arial;}
+.hero{
+background:linear-gradient(45deg,#198754,#20c997);
+color:white;
+padding:50px;
+display:flex;              /* makes items side by side */
+align-items:center;        /* vertical alignment */
+justify-content:center;    /* center content */
+gap:30px;               
+text-align:center;
+}
+.hero img{
+    width:550px;
+    height:350px;
+    object-fit:cover;
+    border-radius:10px;
+}
+.card img{
+height:180px;
+object-fit:cover;
+}
+.card{
+transition:0.3s;
+}
+.card:hover{
+transform:scale(1.05);
+}
+#cart-section{
+display:none;
+background:white;
+padding:20px;
+margin:20px 0;
+border-radius:10px;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+footer{
+background:#198754;
+color:white;
+padding:10px;
+text-align:center;
+margin-top:20px;
+}
+.range{
+font-size:13px;
+color:gray;
+}
+</style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-success">
+<div class="container">
+<a class="navbar-brand fw-bold">🥛 KSR Dairy Farm</a>
+
+<!-- Milk -->
+<div class="dropdown me-2">
+<button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">Milk</button>
+<ul class="dropdown-menu">
+<li><a class="dropdown-item" onclick="filterProducts('milk')">All Milk</a></li>
+<li><a class="dropdown-item" onclick="filterProducts('cow-milk')">Cow Milk</a></li>
+<li><a class="dropdown-item" onclick="filterProducts('buffalo-milk')">Buffalo Milk</a></li>
+</ul>
+</div>
+
+<!-- Milk Products -->
+<div class="dropdown me-2">
+<button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">Milk Products</button>
+<ul class="dropdown-menu">
+<li><a class="dropdown-item" onclick="filterProducts('cow-product')">Cow Milk Products</a></li>
+<li><a class="dropdown-item" onclick="filterProducts('buffalo-product')">Buffalo Milk Products</a></li>
+</ul>
+</div>
+
+<!-- Milk Sweets -->
+<div class="dropdown me-2">
+<button class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown">Milk Sweets</button>
+<ul class="dropdown-menu">
+<li><a class="dropdown-item" onclick="filterProducts('sweets')">View All</a></li>
+</ul>
+</div>
+
+<button class="btn btn-info me-2" onclick="displayProducts(products)">All Products</button>
+
+<button class="btn btn-warning" onclick="toggleCart()">
+Cart 🛒 (<span id="cart-count">0</span>)
+</button>
+
+</div>
+</nav>
+
+<div class="hero">
+
+<img src="https://media.istockphoto.com/id/513470606/photo/still-life-with-dairy-product.jpg?s=612x612&w=0&k=20&c=N61SQicKN1eo-vD1-foew5YnuW9vYDvELluu6QDR-do="/>
+<div>
+<h2>Farm Fresh Dairy & Milk Sweets</h2>
+<p>Our products at KSR Dairy Farm are carefully selected to ensure the highest level of purity, freshness, and quality. We offer farm-fresh cow milk and buffalo milk, along with a wide range of milk products such as ghee, paneer, butter, curd, and fresh cream. In addition, we provide delicious traditional milk sweets like rasgulla, rasmalai, kova, milk cake, and doodh peda. All our products are made from pure and organic milk sourced directly from trusted farms, ensuring they are free from harmful additives and preservatives. We focus on maintaining natural taste, rich nutrition, and hygienic preparation so customers can enjoy healthy and wholesome dairy products every day.</p>
+<p>Available up to 25 Kilometers Delivery Range</p>
+</div>
+
+</div>
+
+<div class="container my-4">
+<div class="row" id="product-list"></div>
+</div>
+
+<div class="container">
+<div id="cart-section">
+<h4>Your Cart</h4>
+<hr>
+<div id="cart-items"></div>
+<hr>
+<h5>Total: ₹<span id="total-price">0</span></h5>
+<button class="btn btn-success w-100 mt-2" onclick="placeOrder()">Place Order</button>
+</div>
+</div>
+<div id="payment-section" style="display:none;" class="container mt-3">
+<h4>Payment Details</h4>
+
+<select id="payment-method" class="form-control mb-3" onchange="showPaymentFields()">
+<option value="COD">Cash On Delivery</option>
+<option value="UPI">UPI</option>
+<option value="Card">Credit/Debit Card</option>
+</select>
+
+<div id="upi-field" style="display:none;">
+<input type="text" id="upi-id" class="form-control mb-2" placeholder="Enter UPI ID (example@upi)">
+</div>
+
+<div id="card-field" style="display:none;">
+<input type="text" id="card-holder" class="form-control mb-2" placeholder="Card Holder Name">
+<input type="text" id="card-number" class="form-control mb-2" placeholder="Card Number (16 digits)">
+<input type="text" id="card-cvv" class="form-control mb-2" placeholder="CVV (3 digits)">
+</div>
+
+<button class="btn btn-success w-100" onclick="confirmOrder()">Confirm Order</button>
+</div>
+
+<footer>© 2026 DairyFresh Pro Store</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+let products=[
+
+{id:1,name:"Cow Milk",basePrice:60,type:"cow-milk",category:"liquid",available:true,image:"https://redcliffelabs.com/myhealth/_next/image/?url=https%3A%2F%2Fmyhealth-redcliffelabs.redcliffelabs.com%2Fmedia%2Fblogcard-images%2F3201%2Fc30853e6-1a34-4574-86a0-72e0e4bb71a4.jpg&w=3840&q=40"},
+{id:2,name:"Buffalo Milk",basePrice:70,type:"buffalo-milk",category:"liquid",available:true,image:"https://c.ndtvimg.com/2026-01/7mm6rg9c_milk_625x300_26_January_26.png?im=FeatureCrop,algorithm=dnn,width=270,height=270"},
+{id:3,name:"Cow Ghee",basePrice:600,type:"cow-product",category:"liquid",available:true,image:"https://sritripuramfoods.com/wp-content/uploads/2025/06/ghee.webp"},
+{id:4,name:"Buffalo Ghee",basePrice:750,type:"buffalo-product",category:"liquid",available:true,image:"https://pothgaal.com/cdn/shop/files/BuffaloGhee1.jpg?v=1748348974&width=1200"},
+{id:5,name:"Paneer",basePrice:280,type:"buffalo-product",category:"solid",available:true,image:"https://cdn1.healthians.com/blog/wp-content/uploads/2025/09/ChatGPT-Image-Sep-24-2025-01_10_44-PM-950x500.webp"},
+{id:6,name:"Curd",basePrice:60,type:"buffalo-product",category:"liquid",available:true,image:"https://www.indianhealthyrecipes.com/wp-content/uploads/2021/07/how-to-make-curd-dahi.jpg"},
+{id:7,name:"Butter",basePrice:100,type:"buffalo-product",category:"solid",available:true,image:"https://www.datocms-assets.com/20941/1638462302-butterhero.png?w=1000&fit=max&fm=jpg"},
+{id:8,name:"Butter Milk",basePrice:30,type:"buffalo-product",category:"liquid",available:true,image:"https://consumer-voice.org/wp-content/uploads/2023/04/Buttermilk-A-Refreshing-Summer-Drink.jpg"},
+{id:9,name:"Rasgulla",basePrice:180,type:"sweets",category:"solid",available:true,image:"https://www.kuchpakrahahai.in/wp-content/uploads/2020/05/Rasgulla-2BRecipe-2Bin-2BPressure-2BCooker-e1626148996679.jpg"},
+
+{id:10,name:"Rasmalai",basePrice:200,type:"sweets",category:"solid",available:true,image:"https://www.shutterstock.com/shutterstock/photos/2664945489/display_1500/stock-photo-rasmalai.jpg"},
+
+{id:11,name:"Pala Kova",basePrice:300,type:"sweets",category:"solid",available:true,image:"https://cdn.shopify.com/s/files/1/0587/0823/0318/files/pala_kova.jpg"},
+
+{id:12,name:"Sugar Kova",basePrice:350,type:"sweets",category:"solid",available:true,image:"https://dayli.in/cdn/shop/files/D2FFFAB6-B2B0-45E1-A21E-E91F7CEC5B27-1.webp?v=1755888304"},
+
+{id:13,name:"Sugarless Kova",basePrice:360,type:"sweets",category:"solid",available:false,image:"https://www.srisangamdairyproducts.com/wp-content/uploads/2021/03/IMG_4138.jpg"},
+
+{id:14,name:"Milk Cake",basePrice:220,type:"sweets",category:"solid",available:true,image:"https://i.ytimg.com/vi/KDzHcXAOQSw/hqdefault.jpg"},
+
+{id:15,name:"Doodh Peda",basePrice:240,type:"sweets",category:"solid",available:true,image:"https://shreevaishnavisweets.com/cdn/shop/files/Shree-Vaishnavi-Sweets-and-Snacks-doodh-peda.jpg?v=1732619794&width=1920"}
+];
+
+let cart=[];
+
+function getPrice(product,size){
+let multiplier=1;
+
+if(product.category==="liquid"){
+if(size==="250ml") multiplier=1;
+if(size==="500ml") multiplier=2;
+if(size==="750ml") multiplier=3;
+if(size==="1L") multiplier=4;
+}else{
+if(size==="250gm") multiplier=1;
+if(size==="500gm") multiplier=2;
+if(size==="750gm") multiplier=3;
+if(size==="1kg") multiplier=4;
+}
+
+return product.basePrice*multiplier;
+}
+
+function displayProducts(list){
+let container=document.getElementById("product-list");
+container.innerHTML="";
+
+list.forEach(product=>{
+
+let sizeDropdown = product.category==="liquid"
+? `<select class="form-select mt-2" id="size-${product.id}">
+<option value="250ml">250ml</option>
+<option value="500ml">500ml</option>
+<option value="750ml">750ml</option>
+<option value="1L">1 Litre</option>
+</select>`
+: `<select class="form-select mt-2" id="size-${product.id}">
+<option value="250gm">250gm</option>
+<option value="500gm">500gm</option>
+<option value="750gm">750gm</option>
+<option value="1kg">1 Kg</option>
+</select>`;
+
+container.innerHTML+=`
+<div class="col-md-3 col-sm-6 mb-4">
+<div class="card shadow">
+<img src="${product.image}" class="card-img-top">
+<div class="card-body text-center">
+<h6>${product.name}</h6>
+<p class="fw-bold">Starting ₹${product.basePrice}</p>
+${sizeDropdown}
+<button class="btn btn-success w-100 mt-2" onclick="addToCart(${product.id})">Add to Cart</button>
+</div>
+</div>
+</div>
+`;
+});
+}
+function filterProducts(type){
+
+if(type === "milk"){
+    displayProducts(products.filter(p => 
+        p.type === "cow-milk" || p.type === "buffalo-milk"
+    ));
+}
+else{
+    displayProducts(products.filter(p => p.type === type));
+}
+
+}
+
+function addToCart(id){
+let product=products.find(p=>p.id===id);
+let size=document.getElementById("size-"+id).value;
+let price=getPrice(product,size);
+
+let existing=cart.find(item=>item.id===id && item.size===size);
+
+if(existing){existing.qty+=1;}
+else{cart.push({...product,qty:1,size:size,price:price});}
+
+updateCart();
+}
+
+function updateCart(){
+let cartItems=document.getElementById("cart-items");
+cartItems.innerHTML="";
+let total=0;
+let count=0;
+
+cart.forEach((item,index)=>{
+total+=item.price*item.qty;
+count+=item.qty;
+
+cartItems.innerHTML+=`
+<div class="d-flex justify-content-between align-items-center mb-2 border p-2 rounded">
+<div>
+<strong>${item.name}</strong> (${item.size})<br>
+₹${item.price} × ${item.qty}
+</div>
+
+<div class="d-flex align-items-center">
+<button class="btn btn-sm btn-danger me-1" onclick="changeQty(${index},-1)">-</button>
+<span class="mx-2">${item.qty}</span>
+<button class="btn btn-sm btn-success ms-1" onclick="changeQty(${index},1)">+</button>
+<button class="btn btn-sm btn-dark ms-3" onclick="removeItem(${index})">Remove</button>
+</div>
+</div>
+`;
+});
+
+document.getElementById("cart-count").innerText=count;
+document.getElementById("total-price").innerText=total;
+}
+
+function changeQty(index,change){
+cart[index].qty+=change;
+if(cart[index].qty<=0) cart.splice(index,1);
+updateCart();
+}
+
+function removeItem(index){
+cart.splice(index,1);
+updateCart();
+}
+
+function toggleCart(){
+let section=document.getElementById("cart-section");
+section.style.display=section.style.display==="block"?"none":"block";
+}
+
+function placeOrder(){
+if(cart.length===0){
+alert("Cart is empty!");
+return;
+}
+document.getElementById("payment-section").style.display="block";
+}
+
+function showPaymentFields(){
+
+let method = document.getElementById("payment-method").value;
+
+let upiField = document.getElementById("upi-field");
+let cardField = document.getElementById("card-field");
+
+if(method === "UPI"){
+    upiField.style.display = "block";
+    cardField.style.display = "none";
+}
+else if(method === "Card"){
+    upiField.style.display = "none";
+    cardField.style.display = "block";
+}
+else{ // COD
+    upiField.style.display = "none";
+    cardField.style.display = "none";
+}
+
+}
+function confirmOrder(){
+
+let method=document.getElementById("payment-method").value;
+
+if(method==="UPI"){
+let upi=document.getElementById("upi-id").value;
+if(upi===""){ alert("Enter UPI ID"); return; }
+}
+
+if(method==="Card"){
+let name=document.getElementById("card-holder").value;
+let number=document.getElementById("card-number").value;
+let cvv=document.getElementById("card-cvv").value;
+
+if(name===""||number.length!==16||cvv.length!==3){
+alert("Enter valid card details");
+return;
+}
+}
+
+if(method==="COD"){
+alert("Order Placed Successfully (Cash on Delivery) ✅");
+}else{
+alert("Order Placed Successfully ✅");
+}
+
+cart=[];
+updateCart();
+document.getElementById("payment-section").style.display="none";
+document.getElementById("cart-section").style.display="none";
+}
+
+displayProducts(products);
+showPaymentFields();
+
+</script>
+</body>
+</html>
